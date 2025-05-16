@@ -1,0 +1,6 @@
+@HangulApi_HostAddress = http://localhost:5296
+
+GET {{HangulApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
