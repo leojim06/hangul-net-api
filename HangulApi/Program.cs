@@ -42,6 +42,11 @@ builder.Services.AddCors(options =>
     });
 });
 
+// builder.WebHost.ConfigureKestrel(options =>
+// {
+//    options.ListenAnyIP(80); // Contenedor usar� este puerto
+// });
+
 // Services
 //builder.Services
 //    .AddSingleton<IFileStorageService, AzureBlobStorageService>();
@@ -53,6 +58,12 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<HangulDbContext>();
+    context.Database.Migrate();
+}
 
 app.UseCors("AllowFronted");
 
@@ -73,5 +84,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapJamoEndpoints();
+app.MapApiEndpoints();
 
 app.Run();
