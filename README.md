@@ -64,64 +64,29 @@ az login
 # Variables (cámbialas según tu caso)
 $RG="hangul-rg"
 $LOCATION="eastus"
-$PLAN = "hangul-plan"
-$APP = "hangul-api"
-$IMAGE = "tuusuario/hangul-api:latest"
+$PLAN_NAME = "hangul-plan"
+$APP_NAME = "hangul-api-lucy-j-dev"
+$IMAGE_NAME = "hangul-api-dotnet9"
+$ACR_NAME = "hangulacr"
+
+RG=hangul-rg
+LOCATION=eastus
+PLAN_NAME=hangul-plan
+APP_NAME=hangul-api-lucy-j-dev
+IMAGE_NAME=hangul-api-dotnet9
+ACR_NAME=hangulacr
 
 # 1. Crear grupo de recursos
-az group create `
-    --name $RG `
-    --location $LOCATION
+az group create --name $RG --location $LOCATION
 
 # 2. Crear app service
-az appservice plan create `
-  --name $PLAN `
-  --resource-group $RG `
-  --sku FREE `
-  --is-linux
+az appservice plan create --name $PLAN_NAME --resource-group $RG --sku F1 --is-linux
 
-# 3. Crear web app
-az webapp create `
-  --name $APP `
-  --resource-group $RG `
-  --plan $PLAN `
-  --deployment-container-image-name $IMAGE
+# 3. Crea la app web
+az webapp create --resource-group $RG --plan $PLAN_NAME --name $APP_NAME --runtime "DOTNETCORE:9.0" --output json
 
-# 4 Configurar app
-az webapp config appsettings set `
-  --name $APP `
-  --resource-group $RG `
-  --settings WEBSITES_PORT=80
+# 4. Obtener perfil de publicacion
+az webapp deployment list-publishing-profiles --name $APP_NAME --resource-group $RG --output tsv > publish-profile.xml
 ```
 
-## Crear Azure Container App (una sola vez)
-
-**Ejecutar en la terminal los siguientes comandos**
-
-```bash
-# Habilita extensiones necesarias
-az extension add --name containerapp --upgrade
-
-# Crear la Container App (vacía por ahora)
-az containerapp create \
-  --name $APP_NAME \
-  --resource-group $RG \
-  --environment "${APP_NAME}-env" \
-  --image $ACR_NAME.azurecr.io/$IMAGE_NAME:latest \
-  --registry-server $ACR_NAME.azurecr.io \
-  --ingress external \
-  --target-port 80 \
-  --min-replicas 0 \
-  --max-replicas 1
-```
-
-## Agregar Secrets en GitHub
-
-Ve a tu repositorio → Settings → Secrets → Actions y agrega:
-| Secret name | Valor |
-| ------------------------- | ---------------------------------------- |
-| `ACR_USERNAME` | usuario del registro ACR |
-| `ACR_PASSWORD` | contraseña del registro ACR |
-| `ACR_LOGIN_SERVER` | ejemplo: `oscarregistry123.azurecr.io` |
-| `AZURE_CONTAINERAPP_NAME` | nombre de tu container app (`oscar-api`) |
-| `AZURE_RESOURCE_GROUP` | nombre del grupo de recursos (`rg-api`) |
+Este ultimo paso va a generar un archivo. Se debe copiar todo el contenido de ese archivo y crear un secret en GitHub para colocar ese contenido en el value del secrete con Key=AZURE_WEBAPP_PUBLISH_PROFILE
