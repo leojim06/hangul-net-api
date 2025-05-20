@@ -58,6 +58,11 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JamoTypeJsonConverter());
 });
 
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(8080);
+});
+
 var app = builder.Build();
 
 // Puerto para Azure App Service
