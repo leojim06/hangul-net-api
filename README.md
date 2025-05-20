@@ -87,6 +87,34 @@ az webapp create --resource-group $RG --plan $PLAN_NAME --name $APP_NAME --runti
 
 # 4. Obtener perfil de publicacion
 az webapp deployment list-publishing-profiles --name $APP_NAME --resource-group $RG --output tsv > publish-profile.xml
+
+# Variables
+$SQL_SERVER_NAME = "hangul-sql-server"
+$SQL_ADMIN = "sqladminuser"
+$SQL_PASSWORD = "Admin123!"
+
+az sql server create `
+  --name $SQL_SERVER_NAME `
+  --resource-group $RG `
+  --location $LOCATION `
+  --admin-user $SQL_ADMIN `
+  --admin-password $SQL_PASSWORD
+
+```
+
+```bash
+# Revisar logs de la aplicación
+az webapp log tail --name hangul-api-lucy-j-dev --resource-group hangul-rg
+
+# Comandos adicionales
+az provider register --namespace Microsoft.ContainerRegistry
+az provider show --namespace Microsoft.ContainerRegistry --query "registrationState"
+
+# Mostrar la lista de recursos dentro de un resource group
+az resource list --resource-group $RG --output table
+
+# Mostrar log de una aplicación
+az webapp log tail --name $APP_NAME --resource-group $RG
 ```
 
 Este ultimo paso va a generar un archivo. Se debe copiar todo el contenido de ese archivo y crear un secret en GitHub para colocar ese contenido en el value del secrete con Key=AZURE_WEBAPP_PUBLISH_PROFILE

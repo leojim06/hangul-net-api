@@ -9,6 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -19,8 +23,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Missing connection string 'DefaultConnection'.");
+}
+
 builder.Services.AddDbContext<HangulDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 // Mediatr
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
@@ -34,22 +44,13 @@ builder.Services
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFronted", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
-
-// builder.WebHost.ConfigureKestrel(options =>
-// {
-//    options.ListenAnyIP(80); // Contenedor usar� este puerto
-// });
-
-// Services
-//builder.Services
-//    .AddSingleton<IFileStorageService, AzureBlobStorageService>();
 
 // Configuration
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -59,13 +60,29 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
+// Puerto para Azure App Service
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Add($"http://*:{port}");
+
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<HangulDbContext>();
-    context.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<HangulDbContext>();
+        logger.LogInformation("Starting DB migration...");
+        context.Database.Migrate();
+        logger.LogInformation("Database migration completed.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database migration failed.");
+        // Aquí puedes decidir si parar la aplicación:
+        throw;
+    }
 }
 
-app.UseCors("AllowFronted");
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -76,13 +93,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseGlobalExceptionHandler();
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.MapJamoEndpoints();
 app.MapApiEndpoints();
 

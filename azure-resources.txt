@@ -1,0 +1,84 @@
+# ===============================
+# CONFIGURACIÓN INICIAL
+# ===============================
+$RG="hangul-rg"
+$LOCATION="eastus2"
+$PLAN_NAME="hangul-plan"
+$APP_NAME="hangul-api-lucy-j-dev"
+
+# ===============================
+# SQL Server y base de datos
+# ===============================
+$SQL_SERVER_NAME="hangul-sql-server-lucy"
+$SQL_ADMIN="sqladminuser"
+$SQL_PASSWORD="LucyJDev123qwe!"
+$DB_NAME="hangul-db"
+
+# ===============================
+# Crear el grupo de recursos
+# ===============================
+az group create `
+  --name $RG `
+  --location $LOCATION
+
+# ===============================
+# Crear el plan App Service Linux
+# ===============================
+az appservice plan create `
+  --name $PLAN_NAME `
+  --resource-group $RG `
+  --sku F1 `
+  --is-linux
+
+# ===============================
+# Crear la app web (.NET 9)
+# ===============================
+az webapp create `
+  --resource-group $RG `
+  --plan $PLAN_NAME `
+  --name $APP_NAME `
+  --runtime "DOTNETCORE:9.0" `
+  --output json
+
+# ===============================
+# Crear el servidor SQL Server
+# ===============================
+az sql server create `
+  --name $SQL_SERVER_NAME `
+  --resource-group $RG `
+  --location $LOCATION `
+  --admin-user $SQL_ADMIN `
+  --admin-password $SQL_PASSWORD
+
+# ===============================
+# Crear la base de datos
+# ===============================
+az sql db create `
+  --resource-group $RG `
+  --server $SQL_SERVER_NAME `
+  --name $DB_NAME `
+  --service-objective S0
+
+# ===============================
+# Permitir conexiones desde Azure
+# ===============================
+az sql server firewall-rule create `
+  --resource-group $RG `
+  --server $SQL_SERVER_NAME `
+  --name AllowAzureServices `
+  --start-ip-address 0.0.0.0 `
+  --end-ip-address 0.0.0.0
+
+# ===============================
+# Establecer cadena de conexión
+# ===============================
+$CONNECTION_STRING="Server=tcp:$SQL_SERVER_NAME.database.windows.net,1433;Initial Catalog=$DB_NAME;Persist Security Info=False;User ID=$SQL_ADMIN;Password=$SQL_PASSWORD;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+
+az webapp config connection-string set `
+  --name $APP_NAME `
+  --resource-group $RG `
+  --settings "ConnectionStrings__DefaultConnection=$CONNECTION_STRING" `
+  --connection-string-type SQLAzure
+
+Write-Output "`n✅ Todo listo. Tu API estará disponible en:"
+Write-Output "https://$APP_NAME.azurewebsites.net/api/v1/health"
