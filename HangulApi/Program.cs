@@ -24,6 +24,7 @@ builder.Services.AddSwaggerGen();
 
 // Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine($"[DbContext] Connection string: {connectionString}");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException("Missing connection string 'DefaultConnection'.");
