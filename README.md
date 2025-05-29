@@ -24,7 +24,7 @@ podman rm hangul-api sqlserver
 podman run -d --name sqlserver --network hangul-net -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=admin123!" -v hangul-sqlserver-data:/var/opt/mssql -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
 
 # Iniciar contenedor de API
-podman run -d --name hangul-api --network hangul-net -e "ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=hangul-db;User Id=sa;Password=admin123!;MultipleActiveResultSets=true;TrustServerCertificate=true" -e "ASPNETCORE_URLS=http://0.0.0.0:8080" -p 5000:8080 hangul-api:dev
+podman run -d --name hangul-api --network hangul-net -e "ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=hangul-db;User Id=sa;Password=admin123!;MultipleActiveResultSets=true;TrustServerCertificate=true" -e ASPNETCORE_ENVIRONMENT=Development -e "ASPNETCORE_URLS=http://0.0.0.0:8080" -p 5000:8080 hangul-api:dev
 
 podman run -d --name hangul-api -p 5000:80 hangul-api:dev
 ```

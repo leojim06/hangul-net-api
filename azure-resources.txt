@@ -2,7 +2,7 @@
 # CONFIGURACIÓN INICIAL
 # ===============================
 $RG="hangul-rg"
-$LOCATION="eastus2"
+$LOCATION="brazilsouth"
 $PLAN_NAME="hangul-plan"
 $APP_NAME="hangul-api-lucy-j-dev"
 

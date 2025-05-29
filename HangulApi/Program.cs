@@ -104,5 +104,6 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapJamoEndpoints();
 app.MapApiEndpoints();
+app.MapGeneralEndpoints();
 
 app.Run();
