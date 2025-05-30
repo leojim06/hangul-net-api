@@ -2,7 +2,7 @@
 
 public class Jamo
 {
-    public const int CHARACTER_MAX_LENGTH = 1;
+    public const int CHARACTER_MAX_LENGTH = 2;
     public const int PRONUNTIATION_MAX_LENGTH = 20;
     public const int CHARACTER_ROMAJI_MAX_LENGTH = 20;
     public const int NAME_MAX_LENGTH = 10;
