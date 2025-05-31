@@ -57,8 +57,8 @@ namespace HangulApi.Migrations
 
                     b.Property<string>("Character")
                         .IsRequired()
-                        .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)");
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
 
                     b.Property<string>("CharacterRomaji")
                         .IsRequired()
