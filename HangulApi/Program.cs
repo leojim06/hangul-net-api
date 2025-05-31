@@ -70,23 +70,23 @@ var app = builder.Build();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Add($"http://*:{port}");
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-//    try
-//    {
-//        var context = scope.ServiceProvider.GetRequiredService<HangulDbContext>();
-//        logger.LogInformation("Starting DB migration...");
-//        context.Database.Migrate();
-//        logger.LogInformation("Database migration completed.");
-//    }
-//    catch (Exception ex)
-//    {
-//        logger.LogError(ex, "Database migration failed.");
-//        // Aquí puedes decidir si parar la aplicación:
-//        throw;
-//    }
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<HangulDbContext>();
+        logger.LogInformation("Starting DB migration...");
+        context.Database.Migrate();
+        logger.LogInformation("Database migration completed.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database migration failed.");
+        // Aquí puedes decidir si parar la aplicación:
+        throw;
+    }
+}
 
 app.UseCors("AllowAll");
 
